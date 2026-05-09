@@ -1,13 +1,16 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 include "config.php";
 
-$stmt = $pdo->query("SELECT * FROM rooms ORDER BY id DESC");
+$stmt = $pdo->query("SELECT * FROM rooms ORDER BY id ASC");
 $rooms = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Rooms</title>
+    <title>Rooms - My Hotel</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -18,7 +21,7 @@ $rooms = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <a href="index.php">Home</a>
         <a href="rooms.php">Rooms</a>
 
-        <?php if(isset($_SESSION['user_id'])): ?>
+        <?php if (isset($_SESSION["user_id"])): ?>
             <a href="my-bookings.php">My Bookings</a>
             <a href="logout.php">Logout</a>
         <?php else: ?>
@@ -30,21 +33,38 @@ $rooms = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 <div class="container">
     <h2>Available Rooms</h2>
+
+    <?php if (isset($_SESSION["user_name"])): ?>
+        <p style="margin-top:10px;">Welcome, <?php echo htmlspecialchars($_SESSION["user_name"]); ?>.</p>
+    <?php endif; ?>
+
     <br>
 
-    <div class="room-grid">
-        <?php foreach($rooms as $room): ?>
-            <div class="room-card">
-                <img src="<?php echo htmlspecialchars($room['image']); ?>" alt="Room Image">
-                <div class="room-content">
-                    <h3><?php echo htmlspecialchars($room['room_name']); ?></h3>
-                    <p><?php echo htmlspecialchars($room['description']); ?></p>
-                    <p class="price">₹<?php echo htmlspecialchars($room['price']); ?> / night</p>
-                    <a class="btn" href="book.php?room_id=<?php echo $room['id']; ?>">Book Now</a>
+    <?php if (count($rooms) === 0): ?>
+        <div class="message error">
+            No rooms found. Please add room records in the database.
+        </div>
+    <?php else: ?>
+        <div class="room-grid">
+            <?php foreach ($rooms as $room): ?>
+                <div class="room-card">
+                    <img src="<?php echo htmlspecialchars($room["image"]); ?>" alt="Room Image">
+
+                    <div class="room-content">
+                        <h3><?php echo htmlspecialchars($room["room_name"]); ?></h3>
+                        <p><?php echo htmlspecialchars($room["description"]); ?></p>
+                        <p class="price">₹<?php echo htmlspecialchars($room["price"]); ?> / night</p>
+
+                        <?php if (isset($_SESSION["user_id"])): ?>
+                            <a class="btn" href="book.php?room_id=<?php echo $room["id"]; ?>">Book Now</a>
+                        <?php else: ?>
+                            <a class="btn" href="login.php">Login to Book</a>
+                        <?php endif; ?>
+                    </div>
                 </div>
-            </div>
-        <?php endforeach; ?>
-    </div>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
 </div>
 
 </body>
